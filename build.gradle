@@ -1,0 +1,113 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version '1.17-SNAPSHOT'
+    id 'maven-publish'
+}
+
+version = project.version
+group = project.group
+base.archivesName = project.mod_id
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(project.java_version)
+    withSourcesJar()
+}
+
+repositories {
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/releases/"
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.fabric_loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    compileOnly "com.terraformersmc:modmenu:20.0.1"
+}
+
+loom {
+    runs {
+        client {
+            client()
+            setConfigName('Fabric Client')
+            ideConfigGenerated(true)
+            runDir('run')
+        }
+    }
+}
+
+processResources {
+    var expandProps = [
+            'version': project.version,
+            'mod_name': project.mod_name,
+            'mod_author': project.mod_author,
+            'mod_id': project.mod_id,
+            'description': project.description,
+            'license': project.license,
+            'fabric_loader_version': project.fabric_loader_version,
+            'minecraft_version': project.minecraft_version,
+            'java_version': project.java_version
+    ]
+    inputs.properties(expandProps)
+    filesMatching('fabric.mod.json') {
+        expand(expandProps)
+    }
+    filesMatching('*.mixins.json') {
+        expand(expandProps)
+    }
+}
+
+tasks.withType(Jar).configureEach {
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_${project.mod_name}" }
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+                'Specification-Title'   : project.mod_name,
+                'Specification-Vendor'  : project.mod_author,
+                'Specification-Version' : project.jar.archiveVersion,
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.jar.archiveVersion,
+                'Implementation-Vendor' : project.mod_author,
+                'Built-On-Minecraft'    : project.minecraft_version
+        ])
+    }
+}
+
+interface InjectedExecOps {
+    @javax.inject.Inject
+    org.gradle.process.ExecOperations getExecOps()
+}
+
+tasks.register('buildAll') {
+    group = 'build'
+    description = 'Builds standalone jars for both 1.21.11 and 26.2 and copies them to build/libs'
+    def execOps = project.objects.newInstance(InjectedExecOps).execOps
+    doLast {
+        execOps.exec {
+            workingDir = file('versions/1.21.11')
+            commandLine = System.getProperty('os.name').toLowerCase().contains('windows') ? ['cmd', '/c', 'gradlew.bat', 'build'] : ['./gradlew', 'build']
+        }
+        execOps.exec {
+            workingDir = file('versions/26.2')
+            commandLine = System.getProperty('os.name').toLowerCase().contains('windows') ? ['cmd', '/c', 'gradlew.bat', 'build'] : ['./gradlew', 'build']
+        }
+        file('build/libs').mkdirs()
+        project.copy {
+            from 'versions/1.21.11/build/libs'
+            into 'build/libs'
+            include '*-1.21.11-*.jar'
+            exclude '*-sources.jar', '*-dev.jar'
+        }
+        project.copy {
+            from 'versions/26.2/build/libs'
+            into 'build/libs'
+            include '*-26.2-*.jar'
+            exclude '*-sources.jar', '*-dev.jar'
+        }
+    }
+}

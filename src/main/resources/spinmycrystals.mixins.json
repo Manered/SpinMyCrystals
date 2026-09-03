@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.manere.spinmycrystals.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SpecialModelRenderersMixin",
+    "SpecialModelWrapperMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

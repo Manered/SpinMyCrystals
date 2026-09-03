@@ -1,0 +1,31 @@
+# Gradle
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# Fabric Loom & Minecraft
+**/.loom/
+**/run/
+**/.fabric/
+
+# IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+**/out/
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Logs & Temp
+*.log
+*.tmp

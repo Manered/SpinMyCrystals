@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "authors": [
+    "${mod_author}"
+  ],
+  "license": "${license}",
+  "icon": "spinmycrystals.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.manere.spinmycrystals.SpinMyCrystals"
+    ],
+    "modmenu": [
+      "dev.manere.spinmycrystals.gui.SpinMyCrystalsModMenu"
+    ]
+  },
+  "mixins": [
+    "${mod_id}.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": [
+      "1.21.11",
+      "26.2"
+    ],
+    "java": ">=21"
+  }
+}
