@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,6 +19,7 @@ public class CrystalRenderTypes {
         .withLocation("pipeline/crystal_no_shade_cull")
         .withShaderDefine("ALPHA_CUTOUT", 0.1F)
         .withShaderDefine("NO_CARDINAL_LIGHTING")
+        .withShaderDefine("EMISSIVE")
         .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
         .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
         .withCull(true)
@@ -27,6 +29,7 @@ public class CrystalRenderTypes {
         .withLocation("pipeline/crystal_no_shade_no_cull")
         .withShaderDefine("ALPHA_CUTOUT", 0.1F)
         .withShaderDefine("NO_CARDINAL_LIGHTING")
+        .withShaderDefine("EMISSIVE")
         .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
         .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
         .withCull(false)
@@ -36,7 +39,7 @@ public class CrystalRenderTypes {
     private static final Map<Identifier, RenderType> NO_SHADE_NO_CULL_CACHE = new ConcurrentHashMap<>();
     private static final Map<Identifier, RenderType> SHADED_CULL_CACHE = new ConcurrentHashMap<>();
 
-    public static RenderType get(Identifier texture, boolean noShade, boolean culled) {
+    public static @NonNull RenderType get(@NonNull Identifier texture, boolean noShade, boolean culled) {
         if (!noShade && !culled) {
             return RenderTypes.entityTranslucent(texture);
         }
@@ -58,7 +61,6 @@ public class CrystalRenderTypes {
                 "crystal_no_shade_cull",
                 RenderSetup.builder(NO_SHADE_CULL_PIPELINE)
                     .withTexture("Sampler0", id)
-                    .useLightmap()
                     .useOverlay()
                     .affectsCrumbling()
                     .sortOnUpload()
@@ -70,7 +72,6 @@ public class CrystalRenderTypes {
             "crystal_no_shade_no_cull",
             RenderSetup.builder(NO_SHADE_NO_CULL_PIPELINE)
                 .withTexture("Sampler0", id)
-                .useLightmap()
                 .useOverlay()
                 .affectsCrumbling()
                 .sortOnUpload()

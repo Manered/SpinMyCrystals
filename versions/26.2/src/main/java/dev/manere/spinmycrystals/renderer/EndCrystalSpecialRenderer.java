@@ -78,7 +78,7 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
 
     @Override
     public void submit(
-        @NonNull EndCrystalRenderState state,
+        @Nullable EndCrystalRenderState state,
         @NonNull PoseStack poseStack,
         @NonNull SubmitNodeCollector collector,
         int light,
@@ -92,7 +92,10 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
 
         RenderType renderType = CrystalRenderTypes.get(TEXTURE, config.noShade, config.culled);
 
-        float baseAnim = state.ageInTicks * 3.0F;
+        float baseAnim = 0;
+        if (state != null) {
+            baseAnim = state.ageInTicks * 3.0F;
+        }
 
         Quaternionf outerRot = CrystalRotation.computeOuterRotation(baseAnim, config.outerGlassSpeed);
         poseStack.pushPose();
@@ -144,10 +147,8 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
                     TextureSlots textureSlots = model.getTopTextureSlots();
                     fallbackQuads = model.bakeTopGeometry(textureSlots, baker, BlockModelRotation.IDENTITY);
                     fallbackProperties = ModelRenderProperties.fromResolvedModel(baker, model, textureSlots);
-                    if (fallbackQuads != null) {
-                        QuadCollection finalQuads = fallbackQuads;
-                        fallbackExtents = Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(finalQuads.getAll()));
-                    }
+                    QuadCollection finalQuads = fallbackQuads;
+                    fallbackExtents = Suppliers.memoize(() -> CuboidItemModelWrapper.computeExtents(finalQuads.getAll()));
                 } catch (Exception ignored) {
                 }
             }

@@ -12,7 +12,7 @@ public class SpinMyCrystalsScreen extends AbstractSpinMyCrystalsScreen {
 
     @Override
     public void extractRenderState(@NonNull GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        if (this.minecraft != null && this.minecraft.level != null) {
+        if (this.minecraft.level != null) {
             graphics.fill(0, 0, this.width, this.height, 0x88000000);
         } else {
             this.extractMenuBackground(graphics);
@@ -37,8 +37,6 @@ public class SpinMyCrystalsScreen extends AbstractSpinMyCrystalsScreen {
 
     @Override
     protected void navigateBack() {
-        if (this.minecraft != null) {
-            this.minecraft.gui.setScreen(this.parent);
-        }
+        this.minecraft.gui.setScreen(this.parent);
     }
 }

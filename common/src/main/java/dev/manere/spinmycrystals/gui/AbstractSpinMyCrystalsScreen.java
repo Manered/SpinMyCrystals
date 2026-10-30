@@ -168,7 +168,6 @@ public abstract class AbstractSpinMyCrystalsScreen extends Screen {
             }
             case 3 -> {
                 int y = contentY;
-                int btnW = contentWidth;
 
                 boolean shadingOn = !config.noShade;
                 Component shadingText = Component.literal("Shading: ").withStyle(s -> s.withColor(0xFFFFFF).withBold(false))
@@ -181,7 +180,7 @@ public abstract class AbstractSpinMyCrystalsScreen extends Screen {
                             config.noShade = !config.noShade;
                             this.init();
                         }
-                    ).bounds(contentX, y, btnW, 20).build(),
+                    ).bounds(contentX, y, contentWidth, 20).build(),
                     "Removes dark face shadows on the crystal without making it fullbright."
                 ));
 
@@ -197,7 +196,7 @@ public abstract class AbstractSpinMyCrystalsScreen extends Screen {
                             config.culled = !config.culled;
                             this.init();
                         }
-                    ).bounds(contentX, y, btnW, 20).build(),
+                    ).bounds(contentX, y, contentWidth, 20).build(),
                     "Culls inner hidden faces of the crystal to look cleaner."
                 ));
             }
@@ -311,9 +310,7 @@ public abstract class AbstractSpinMyCrystalsScreen extends Screen {
     @Override
     public void onClose() {
         SpinMyCrystalsConfig.save();
-        if (this.minecraft != null) {
-            navigateBack();
-        }
+        navigateBack();
     }
 
     protected abstract void navigateBack();

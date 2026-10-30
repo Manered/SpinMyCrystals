@@ -8,12 +8,9 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.rendering.v1.ModelLayerRegistry;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.resources.Identifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SpinMyCrystals implements ClientModInitializer {
     public static final String MOD_ID = "spinmycrystals";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final ModelLayerLocation MODEL_LAYER = new ModelLayerLocation(id("item/end_crystal"), "main");
 
     public static Identifier id(String path) {
@@ -26,8 +23,6 @@ public class SpinMyCrystals implements ClientModInitializer {
 
         ModelLayerRegistry.registerModelLayer(MODEL_LAYER, SpinningCrystalModel::createBodyLayer);
 
-        ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-            SpinMyCrystalsCommand.register(dispatcher);
-        });
+        ClientCommandRegistrationCallback.EVENT.register((dispatcher, _) -> SpinMyCrystalsCommand.register(dispatcher));
     }
 }

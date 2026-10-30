@@ -1,5 +1,6 @@
 package dev.manere.spinmycrystals.renderer;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import dev.manere.spinmycrystals.SpinMyCrystals;
@@ -8,10 +9,16 @@ import dev.manere.spinmycrystals.math.CrystalRotation;
 import dev.manere.spinmycrystals.model.SpinningCrystalModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.TextureSlots;
 import net.minecraft.client.renderer.entity.state.EndCrystalRenderState;
+import net.minecraft.client.renderer.item.BlockModelWrapper;
+import net.minecraft.client.renderer.item.ModelRenderProperties;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
+import net.minecraft.client.resources.model.BlockModelRotation;
+import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.QuadCollection;
+import net.minecraft.client.resources.model.ResolvedModel;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -19,16 +26,41 @@ import net.minecraft.world.item.ItemStack;
 import org.joml.Quaternionf;
 import org.joml.Vector3fc;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrystalRenderState> {
     public static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/entity/end_crystal/end_crystal.png");
 
     private final SpinningCrystalModel model;
+    private final @Nullable QuadCollection fallbackQuads;
+    private final @Nullable Supplier<Vector3fc[]> fallbackExtents;
+    private final @Nullable ModelRenderProperties fallbackProperties;
 
-    public EndCrystalSpecialRenderer(@NonNull SpinningCrystalModel model) {
+    public EndCrystalSpecialRenderer(
+        @NonNull SpinningCrystalModel model,
+        @Nullable QuadCollection fallbackQuads,
+        @Nullable Supplier<Vector3fc[]> fallbackExtents,
+        @Nullable ModelRenderProperties fallbackProperties
+    ) {
         this.model = model;
+        this.fallbackQuads = fallbackQuads;
+        this.fallbackExtents = fallbackExtents;
+        this.fallbackProperties = fallbackProperties;
+    }
+
+    public @Nullable QuadCollection getFallbackQuads() {
+        return this.fallbackQuads;
+    }
+
+    public @Nullable Supplier<Vector3fc[]> getFallbackExtents() {
+        return this.fallbackExtents;
+    }
+
+    public @Nullable ModelRenderProperties getFallbackProperties() {
+        return this.fallbackProperties;
     }
 
     @Override
@@ -47,7 +79,7 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
 
     @Override
     public void submit(
-        @NonNull EndCrystalRenderState state,
+        @Nullable EndCrystalRenderState state,
         @NonNull ItemDisplayContext displayContext,
         @NonNull PoseStack poseStack,
         @NonNull SubmitNodeCollector collector,
@@ -57,14 +89,12 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
         int seed
     ) {
         SpinMyCrystalsConfig config = SpinMyCrystalsConfig.get();
-        if (!config.enabled) return;
+        if (!config.enabled || state == null) return;
 
         poseStack.pushPose();
         poseStack.translate(0.5 + config.offsetX, 0.5 + config.offsetY, 0.5 + config.offsetZ);
 
-        RenderType renderType = config.culled
-            ? RenderTypes.itemEntityTranslucentCull(TEXTURE)
-            : RenderTypes.entityTranslucent(TEXTURE);
+        RenderType renderType = CrystalRenderTypes.get(TEXTURE, config.noShade, config.culled);
 
         int effectiveLight = config.noShade ? 15728880 : light;
 
@@ -109,8 +139,25 @@ public class EndCrystalSpecialRenderer implements SpecialModelRenderer<EndCrysta
         @Override
         @NonNull
         public SpecialModelRenderer<?> bake(SpecialModelRenderer.@NonNull BakingContext context) {
+            QuadCollection fallbackQuads = null;
+            Supplier<Vector3fc[]> fallbackExtents = null;
+            ModelRenderProperties fallbackProperties = null;
+
+            if (context instanceof net.minecraft.client.renderer.item.ItemModel.BakingContext itemContext) {
+                try {
+                    ModelBaker baker = itemContext.blockModelBaker();
+                    ResolvedModel model = baker.getModel(Identifier.withDefaultNamespace("item/end_crystal"));
+                    TextureSlots textureSlots = model.getTopTextureSlots();
+                    fallbackQuads = model.bakeTopGeometry(textureSlots, baker, BlockModelRotation.IDENTITY);
+                    fallbackProperties = ModelRenderProperties.fromResolvedModel(baker, model, textureSlots);
+                    QuadCollection finalQuads = fallbackQuads;
+                    fallbackExtents = Suppliers.memoize(() -> BlockModelWrapper.computeExtents(finalQuads.getAll()));
+                } catch (Exception ignored) {
+                }
+            }
+
             SpinningCrystalModel crystalModel = new SpinningCrystalModel(context.entityModelSet().bakeLayer(SpinMyCrystals.MODEL_LAYER));
-            return new EndCrystalSpecialRenderer(crystalModel);
+            return new EndCrystalSpecialRenderer(crystalModel, fallbackQuads, fallbackExtents, fallbackProperties);
         }
 
         @Override

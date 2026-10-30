@@ -9,10 +9,10 @@ import net.minecraft.client.Minecraft;
 public class SpinMyCrystalsCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(ClientCommandManager.literal("spinmycrystals")
-            .executes(ctx -> openMenu(ctx.getSource())));
+            .executes(ctx -> openMenu()));
     }
 
-    private static int openMenu(FabricClientCommandSource source) {
+    private static int openMenu() {
         Minecraft mc = Minecraft.getInstance();
         mc.schedule(() -> mc.setScreen(new SpinMyCrystalsScreen(null)));
         return 1;

@@ -4,7 +4,8 @@
   "package": "dev.manere.spinmycrystals.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "SpecialModelRenderersMixin"
+    "SpecialModelRenderersMixin",
+    "SpecialModelWrapperMixin"
   ],
   "injectors": {
     "defaultRequire": 1
